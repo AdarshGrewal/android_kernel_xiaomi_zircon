@@ -63,3 +63,4 @@ obj-$(CONFIG_UID_SYS_STATS)	+= uid_sys_stats.o
 obj-y				+= mediatek/
 obj-$(CONFIG_MI_MEMORY_SYSFS)   += mi-memory/
 obj-$(CONFIG_OPEN_DICE)		+= open-dice.o
+obj-$(CONFIG_MI_HARDWARE_ID) += hwid/
