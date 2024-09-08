@@ -2566,6 +2566,7 @@ static int msdc_of_clock_parse(struct platform_device *pdev,
 		return ret;
 	}
 
+
 	host->bulk_clks[0].id = "pclk_cg";
 	host->bulk_clks[1].id = "axi_cg";
 	host->bulk_clks[2].id = "ahb_cg";
