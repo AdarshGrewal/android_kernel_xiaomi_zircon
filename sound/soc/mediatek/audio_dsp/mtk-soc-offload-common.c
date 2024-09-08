@@ -72,6 +72,7 @@ static struct snd_compr_stream *offload_stream;
 
 static struct device *offload_dev;
 
+
 #define use_wake_lock
 static unsigned long ringbuf_writebk;
 static unsigned long long ringbufbridge_writebk;
@@ -108,9 +109,10 @@ static void offloadservice_releasewriteblocked(void)
 		pr_info("%s offload_stream or offload_stream->runtime is NULL\n", __func__);
 		return;
 	}
+
 	if (afe_offload_block.state == OFFLOAD_STATE_DRAIN) {
-		// used to wakeup snd_compress_wait_for_drain
-		offload_stream->runtime->state = SNDRV_PCM_STATE_RUNNING;
+    	// used to wakeup snd_compress_wait_for_drain
+    	offload_stream->runtime->state = SNDRV_PCM_STATE_RUNNING;
 	}
 	wake_up(&offload_stream->runtime->sleep);
 }
@@ -929,7 +931,7 @@ static int mtk_compr_offload_pause(struct snd_compr_stream *stream)
 					1, 0, NULL);
 		pr_debug("%s > transferred\n", __func__);
 	}
-	afe_offload_block.state = OFFLOAD_STATE_PAUSED;
+ 	afe_offload_block.state = OFFLOAD_STATE_PAUSED;
 	if (afe_offload_service.pause_in_drain) {
 		pr_debug("%s paused in drain done, set PCM STATE to paused\n", __func__);
 		offload_stream->runtime->state = SNDRV_PCM_STATE_PAUSED;
