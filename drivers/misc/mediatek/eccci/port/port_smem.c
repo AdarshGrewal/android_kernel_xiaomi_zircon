@@ -15,7 +15,7 @@
 #include "mt-plat/mtk_ccci_common.h"
 #include "ccci_fsm.h"
 #include "port_smem.h"
-
+#include "ccci_core.h"
 #define TAG SMEM
 
 #define DUMMY_PAGE_SIZE (128)
@@ -570,8 +570,7 @@ long port_smem_ioctl(struct port_t *port, unsigned int cmd, unsigned long arg)
 		break;
 	case CCCI_IOC_SMEM_POLL_EXIT:
 		CCCI_NORMAL_LOG(0, TAG,
-			"%s:into CCCI_IOC_SMEM_POLL_EXIT\n",
-			__func__);
+			"%s:into CCCI_IOC_SMEM_POLL_EXIT\n", __func__);
 		ret = port_smem_rx_wakeup(port);
 		break;
 	default:
