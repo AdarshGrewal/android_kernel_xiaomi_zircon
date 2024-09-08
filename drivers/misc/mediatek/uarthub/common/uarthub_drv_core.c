@@ -171,13 +171,11 @@ static int mtk_uarthub_remove(struct platform_device *pdev)
 
 static int mtk_uarthub_resume(struct device *dev)
 {
-#if UARTHUB_DEBUG_LOG
 	const char *prefix = "##########";
 	const char *postfix = "##############";
 
 	pr_info("[%s] %s uarthub enter resume %s\n",
 		__func__, prefix, postfix);
-#endif
 
 #if UARTHUB_INFO_LOG
 	uarthub_core_debug_clk_info("HUB_DBG_RESUME");
@@ -702,7 +700,7 @@ int uarthub_core_open(void)
 	if (g_max_dev <= 0)
 		return -1;
 
-#if UARTHUB_DEBUG_LOG
+#if UARTHUB_INFO_LOG
 	pr_info("[%s] g_max_dev=[%d]\n", __func__, g_max_dev);
 #endif
 
@@ -742,7 +740,7 @@ int uarthub_core_close(void)
 		return -1;
 	}
 
-#if UARTHUB_DEBUG_LOG
+#if UARTHUB_INFO_LOG
 	pr_info("[%s] g_max_dev=[%d]\n", __func__, g_max_dev);
 #endif
 
