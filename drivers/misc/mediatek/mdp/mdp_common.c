@@ -1736,7 +1736,6 @@ s32 cmdq_mdp_wait(struct cmdqRecStruct *handle,
 				 * so that it won't be consumed in the future
 				 */
 				list_del_init(&handle->list_entry);
-				cmdq_task_destroy(handle);
 				mutex_unlock(&mdp_task_mutex);
 				CMDQ_TRACE_FORCE_END();
 				return -ETIMEDOUT;
@@ -2485,13 +2484,10 @@ void cmdq_mdp_unmap_mmsys_VA(void)
 
 static void mdp_request_voltage(unsigned long frequency, bool is_mdp)
 {
-	int low_volt = 0, ret = 0;
+	int low_volt, ret = 0;
 	int index = 0;
 	u64 *freqs = is_mdp ? mdp_pmqos_freq : isp_pmqos_freq;
 	int *volts = is_mdp ? mdp_volts : isp_volts;
-
-	if (!freqs || !volts)
-		return;
 
 	if (!frequency) {
 		low_volt = 0;
@@ -2757,6 +2753,9 @@ static void cmdq_mdp_begin_task_virtual(struct cmdqRecStruct *handle,
 				cmdq_mdp_get_func()->qosGetPath(
 				thread_id, target_pmqos->qos2_isp_port[i]);
 
+			if (!port_path)
+				continue;
+
 			DP_BANDWIDTH(target_pmqos->qos2_isp_bandwidth[i],
 				total_pixel,
 				isp_throughput,
@@ -2785,6 +2784,9 @@ static void cmdq_mdp_begin_task_virtual(struct cmdqRecStruct *handle,
 			struct icc_path *port_path =
 				cmdq_mdp_get_func()->qosGetPath(thread_id,
 				port);
+
+			if (!port_path)
+				continue;
 
 			DP_BANDWIDTH(target_pmqos->qos2_mdp_bandwidth[i],
 				target_pmqos->mdp_total_pixel,
@@ -3038,6 +3040,9 @@ static void cmdq_mdp_end_task_virtual(struct cmdqRecStruct *handle,
 				cmdq_mdp_get_func()->qosGetPath(thread_id,
 				mdp_curr_pmqos->qos2_isp_port[i]);
 
+			if (!port_path)
+				continue;
+
 			CMDQ_LOG_PMQOS(
 				"[%d]end task, clear curr isp-bw of port[%d](0x%x) to 0\n",
 				thread_id, i, mdp_curr_pmqos->qos2_isp_port[i]);
@@ -3050,6 +3055,9 @@ static void cmdq_mdp_end_task_virtual(struct cmdqRecStruct *handle,
 			struct icc_path *port_path =
 				cmdq_mdp_get_func()->qosGetPath(thread_id,
 				target_pmqos->qos2_isp_port[i]);
+
+			if (!port_path)
+				continue;
 
 			DP_BANDWIDTH(target_pmqos->qos2_isp_bandwidth[i],
 				target_pmqos->isp_total_pixel,
@@ -3085,6 +3093,9 @@ static void cmdq_mdp_end_task_virtual(struct cmdqRecStruct *handle,
 				cmdq_mdp_get_func()->qosGetPath(thread_id,
 				port);
 
+			if (!port_path)
+				continue;
+
 			CMDQ_LOG_PMQOS(
 				"[%d]end task, clear curr mdp-bw of port[%d](0x%x) to 0\n",
 				thread_id, i, mdp_curr_pmqos->qos2_mdp_port[i]);
@@ -3099,6 +3110,9 @@ static void cmdq_mdp_end_task_virtual(struct cmdqRecStruct *handle,
 			struct icc_path *port_path =
 				cmdq_mdp_get_func()->qosGetPath(thread_id,
 				port);
+
+			if (!port_path)
+				continue;
 
 			DP_BANDWIDTH(target_pmqos->qos2_mdp_bandwidth[i],
 				target_pmqos->mdp_total_pixel,
