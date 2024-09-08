@@ -709,6 +709,16 @@ static int mtk_uart_apdma_rx_handler(struct mtk_chan *c)
 #else
 	c->rec_info[idx].irq_cur_cpu = 0xff;
 #endif
+#ifdef CONFIG_UART_DMA_DATA_RECORD
+	if (d->vd.tx.callback_param != NULL) {
+		struct uart_8250_port *p = (struct uart_8250_port *)d->vd.tx.callback_param;
+		struct uart_8250_dma *dma = p->dma;
+
+	if ((dma != NULL) && (cnt <= UART_RECORD_MAXLEN))
+		memcpy(c->rec_info[idx].rec_buf, (unsigned char *)dma->rx_buf,
+			cnt);
+	}
+#endif
 
 	list_del(&d->vd.node);
 	vchan_cookie_complete_thread_irq(&d->vd);
@@ -771,10 +781,12 @@ static int mtk_uart_apdma_alloc_chan_resources(struct dma_chan *chan)
 		}
 	}
 
-	ret = pm_runtime_get_sync(mtkd->ddev.dev);
-	if (ret < 0) {
-		pm_runtime_put_noidle(chan->device->dev);
-		return ret;
+	if (mtkd->support_hub == 0) {
+		ret = pm_runtime_get_sync(mtkd->ddev.dev);
+		if (ret < 0) {
+			pm_runtime_put_noidle(chan->device->dev);
+			return ret;
+		}
 	}
 
 	if (c->dir == DMA_MEM_TO_DEV) {
@@ -845,7 +857,10 @@ static void mtk_uart_apdma_free_chan_resources(struct dma_chan *chan)
 	if (c->chan_desc_count > 0)
 		pr_info("[WARN] %s, c->chan_desc_count[%d]\n", __func__, c->chan_desc_count);
 	vchan_free_chan_resources(&c->vc);
-	pm_runtime_put_sync(mtkd->ddev.dev);
+
+	if (mtkd->support_hub == 0) {
+		pm_runtime_put_sync(mtkd->ddev.dev);
+	}
 }
 
 static enum dma_status mtk_uart_apdma_tx_status(struct dma_chan *chan,
@@ -961,7 +976,7 @@ static int mtk_uart_apdma_terminate_all(struct dma_chan *chan)
 		mtk_uart_apdma_write(c, VFF_FLUSH, VFF_FLUSH_B);
 		ret = readx_poll_timeout(readl, c->base + VFF_FLUSH,
 				  status, status != VFF_FLUSH_B, 10, 100);
-		dev_info(c->vc.chan.device->dev, "flush begin %s[%d]: %d\n",
+		dev_info(c->vc.chan.device->dev, "flush %s[%d]: %d\n",
 			c->dir == DMA_DEV_TO_MEM ? "RX":"TX", c->irq, ret);
 		/*
 		 * DMA hardware will generate a interrupt immediately
@@ -976,9 +991,6 @@ static int mtk_uart_apdma_terminate_all(struct dma_chan *chan)
 		while (state)
 			irq_get_irqchip_state(c->irq,
 				IRQCHIP_STATE_ACTIVE, &state);
-
-		dev_info(c->vc.chan.device->dev, "flush end %s\n",
-			c->dir == DMA_DEV_TO_MEM ? "RX":"TX");
 	}
 
 	/*

@@ -1148,7 +1148,6 @@ static int mt6985_adsp_mem_set(struct snd_kcontrol *kcontrol,
 	int ul_memif_num = -1;
 	int ref_memif_num = -1;
 	int task_id = get_dsp_task_id_from_str(kcontrol->id.name);
-	int old_value;
 
 	switch (task_id) {
 	case AUDIO_TASK_PRIMARY_ID:
@@ -1174,6 +1173,8 @@ static int mt6985_adsp_mem_set(struct snd_kcontrol *kcontrol,
 	case AUDIO_TASK_BTUL_ID:
 		ul_memif_num = get_dsp_task_attr(task_id,
 						 ADSP_TASK_ATTR_MEMUL);
+		ref_memif_num = get_dsp_task_attr(task_id,
+						  ADSP_TASK_ATTR_MEMREF);
 		break;
 	case AUDIO_TASK_CALL_FINAL_ID:
 	case AUDIO_TASK_PLAYBACK_ID:
@@ -1193,38 +1194,17 @@ static int mt6985_adsp_mem_set(struct snd_kcontrol *kcontrol,
 
 	if (dl_memif_num >= 0) {
 		memif = &afe->memif[dl_memif_num];
-		old_value = memif->use_adsp_share_mem;
 		memif->use_adsp_share_mem = ucontrol->value.integer.value[0];
-
-		pr_info("%s(), dl:%s, use_adsp_share_mem %d->%d\n",
-			__func__, memif->data->name, old_value, memif->use_adsp_share_mem);
-
-		if (memif->substream && memif->use_adsp_share_mem == 0 && old_value)
-			AUDIO_AEE("disable adsp memory used before substream shutdown");
 	}
 
 	if (ul_memif_num >= 0) {
 		memif = &afe->memif[ul_memif_num];
-		old_value = memif->use_adsp_share_mem;
 		memif->use_adsp_share_mem = ucontrol->value.integer.value[0];
-
-		pr_info("%s(), ul:%s, use_adsp_share_mem %d->%d\n",
-			__func__, memif->data->name, old_value, memif->use_adsp_share_mem);
-
-		if (memif->substream && memif->use_adsp_share_mem == 0 && old_value)
-			AUDIO_AEE("disable adsp memory used before substream shutdown");
 	}
 
 	if (ref_memif_num >= 0) {
 		memif = &afe->memif[ref_memif_num];
-		old_value = memif->use_adsp_share_mem;
 		memif->use_adsp_share_mem = ucontrol->value.integer.value[0];
-
-		pr_info("%s(), ref:%s, use_adsp_share_mem %d->%d\n",
-			__func__, memif->data->name, old_value, memif->use_adsp_share_mem);
-
-		if (memif->substream && memif->use_adsp_share_mem == 0 && old_value)
-			AUDIO_AEE("disable adsp memory used before substream shutdown");
 	}
 
 	return 0;

@@ -122,9 +122,11 @@ static int __maybe_unused led_disp_set(struct mt_led_data *mdev,
 	int ret = 0;
 
 	ret = mtkfb_set_backlight_level(brightness, params, params_flag);
-	pr_debug("set brightness %d return %d", brightness, ret);
-	if (brightness == 0 && ret == -EINVAL)
+	pr_debug("set brightness %d, return %d", brightness, ret);
+	if (brightness == 0 && ret == -EINVAL) {
+		pr_info("%s brightness = %d, ret = %d\n", __func__, brightness, ret);
 		ret = 0;
+	}
 	return ret;
 }
 
@@ -135,10 +137,12 @@ static int __maybe_unused led_disp_conn_set(struct mt_led_data *mdev,
 
 	ret = mtk_drm_set_conn_backlight_level(mdev->conf.connector_id, brightness,
 		params, params_flag);
-	pr_debug("set %d brightness %d, elvss: %d, flag: d% return %d",
+	pr_debug("set %d brightness %d, elvss: %d, flag: %d, return %d",
 		mdev->conf.connector_id, brightness, params, params_flag, ret);
-	if (brightness == 0 && ret == -EINVAL)
+	if (brightness == 0 && ret == -EINVAL) {
+		pr_info("%s brightness = %d, ret = %d\n", __func__, brightness, ret);
 		ret = 0;
+	}
 	return ret;
 }
 

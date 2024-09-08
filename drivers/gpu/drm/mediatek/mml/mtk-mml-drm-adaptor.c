@@ -281,14 +281,10 @@ static u32 format_drm_to_mml(u32 drm_format, u64 modifier)
 	return drm_format;
 }
 
-static bool check_frame_wo_change(struct mml_submit *submit,
+static bool check_frame_change(struct mml_frame_info *info,
 			       struct mml_frame_config *cfg)
 {
-	/* Only when both of frame info and dl_out are not changed, return true,
-	 * else return false
-	 */
-	return (!memcmp(&submit->info, &cfg->info, sizeof(submit->info)) &&
-		!memcmp(&submit->dl_out[0], &cfg->dl_out[0], sizeof(submit->dl_out)));
+	return !memcmp(&cfg->info, info, sizeof(*info));
 }
 
 static struct mml_frame_config *frame_config_find_reuse(
@@ -310,7 +306,7 @@ static struct mml_frame_config *frame_config_find_reuse(
 		if (submit->update && cfg->last_jobid == submit->job->jobid)
 			goto done;
 
-		if (check_frame_wo_change(submit, cfg))
+		if (check_frame_change(&submit->info, cfg))
 			goto done;
 
 		idx++;
@@ -397,9 +393,8 @@ static void frame_config_queue_destroy(struct kref *kref)
 
 static struct mml_frame_config *frame_config_create(
 	struct mml_drm_ctx *ctx,
-	struct mml_submit *submit)
+	struct mml_frame_info *info)
 {
-	struct mml_frame_info *info = &submit->info;
 	struct mml_frame_config *cfg = kzalloc(sizeof(*cfg), GFP_KERNEL);
 
 	if (!cfg)
@@ -416,7 +411,6 @@ static struct mml_frame_config *frame_config_create(
 	cfg->task_ops = ctx->task_ops;
 	cfg->cfg_ops = ctx->cfg_ops;
 	cfg->ctx_kt_done = ctx->kt_done;
-	memcpy(cfg->dl_out, submit->dl_out, sizeof(cfg->dl_out));
 	INIT_WORK(&cfg->work_destroy, frame_config_destroy_work);
 	kref_init(&cfg->ref);
 
@@ -772,8 +766,8 @@ s32 mml_drm_submit(struct mml_drm_ctx *ctx, struct mml_submit *submit,
 	void *cb_param)
 {
 	struct mml_frame_config *cfg;
-	struct mml_task *task;
-	s32 result;
+	struct mml_task *task = NULL;
+	s32 result = -EINVAL;
 	u32 i;
 	struct fence_data fence = {0};
 
@@ -873,7 +867,7 @@ s32 mml_drm_submit(struct mml_drm_ctx *ctx, struct mml_submit *submit,
 			kref_get(&cfg->ref);
 		}
 	} else {
-		cfg = frame_config_create(ctx, submit);
+		cfg = frame_config_create(ctx, &submit->info);
 		mml_msg("[drm]%s create config %p", __func__, cfg);
 		if (IS_ERR(cfg)) {
 			result = PTR_ERR(cfg);
@@ -935,16 +929,16 @@ s32 mml_drm_submit(struct mml_drm_ctx *ctx, struct mml_submit *submit,
 
 	result = frame_buf_to_task_buf(&task->buf.src,
 			      &submit->buffer.src,
-			      "drm_mml_rdma");
+			      "mml_rdma");
 	if (result) {
-		mml_err("[drm]%s get dma buf fail", __func__);
+		mml_err("[drm]%s get src dma buf fail", __func__);
 		goto err_buf_exit;
 	}
 
 	if (submit->info.dest[0].pq_config.en_region_pq) {
 		result = frame_buf_to_task_buf(&task->buf.seg_map,
 				      &submit->buffer.seg_map,
-				      "drm_mml_rdma_segmap");
+				      "mml_rdma");
 		if (result) {
 			mml_err("[drm]%s get dma buf fail", __func__);
 			goto err_buf_exit;
@@ -955,9 +949,9 @@ s32 mml_drm_submit(struct mml_drm_ctx *ctx, struct mml_submit *submit,
 	for (i = 0; i < submit->buffer.dest_cnt; i++) {
 		result = frame_buf_to_task_buf(&task->buf.dest[i],
 				      &submit->buffer.dest[i],
-				      "drm_mml_wrot");
+				      "mml_wrot");
 		if (result) {
-			mml_err("[drm]%s get dma buf fail", __func__);
+			mml_err("[drm]%s get dest %u dma buf fail", __func__, i);
 			goto err_buf_exit;
 		}
 	}
@@ -1000,7 +994,29 @@ err_unlock_exit:
 	mutex_unlock(&ctx->config_mutex);
 err_buf_exit:
 	mml_trace_end();
-	mml_log("%s fail result %d", __func__, result);
+	mml_log("%s fail result %d task %p", __func__, result, task);
+	if (task) {
+		bool is_init_state = task->state == MML_TASK_INITIAL;
+
+		mutex_lock(&ctx->config_mutex);
+		list_del_init(&task->entry);
+		cfg->await_task_cnt--;
+
+		if (is_init_state) {
+			mml_log("dec config %p and del", cfg);
+			list_del_init(&cfg->entry);
+			ctx->config_cnt--;
+			/* revert racing ref count decrease after done */
+			if (cfg->info.mode == MML_MODE_RACING)
+				atomic_dec(&ctx->racing_cnt);
+		} else
+			mml_log("dec config %p", cfg);
+		mutex_unlock(&ctx->config_mutex);
+		kref_put(&task->ref, task_move_to_destroy);
+
+		if (is_init_state)
+			cfg->cfg_ops->put(cfg);
+	}
 	return result;
 }
 EXPORT_SYMBOL_GPL(mml_drm_submit);

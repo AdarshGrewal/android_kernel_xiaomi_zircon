@@ -433,9 +433,9 @@ static void print_report(enum kcsan_value_change value_change,
 	pr_err("==================================================================\n");
 
 	check_panic_on_warn("KCSAN");
-#if IS_ENABLED(CONFIG_MTK_PANIC_ON_WARN)
-	BUG();
-#endif
+ #if IS_ENABLED(CONFIG_MTK_PANIC_ON_WARN)
+ 	BUG();
+ #endif
 }
 
 static void release_report(unsigned long *flags, struct other_info *other_info)

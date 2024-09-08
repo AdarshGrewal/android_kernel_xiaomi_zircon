@@ -34,7 +34,7 @@ config CLANG_VERSION
 
 config AS_IS_GNU
 	def_bool $(success,test "$(as-name)" = GNU)
-
+	
 config AS_IS_LLVM
 	def_bool $(success,test "$(as-name)" = LLVM)
 

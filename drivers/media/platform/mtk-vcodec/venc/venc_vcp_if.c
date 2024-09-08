@@ -94,14 +94,12 @@ static void handle_query_cap_ack_msg(struct venc_vcu_ipi_query_cap_ack *msg)
 
 static struct device *get_dev_by_mem_type(struct venc_inst *inst, struct vcodec_mem_obj *mem)
 {
-	if (mem->type == MEM_TYPE_FOR_SW) {
+	if (mem->type == MEM_TYPE_FOR_SW || mem->type == MEM_TYPE_FOR_SEC_SW) {
 		if (inst->ctx->id & 1)
 			return vcp_get_io_device(VCP_IOMMU_WORK_256MB2);
 		else
 			return vcp_get_io_device(VCP_IOMMU_256MB1);
-	} else if (mem->type == MEM_TYPE_FOR_SEC_SW)
-		return vcp_get_io_device(VCP_IOMMU_SEC);
-	else if (mem->type == MEM_TYPE_FOR_HW || mem->type == MEM_TYPE_FOR_SEC_HW
+	} else if (mem->type == MEM_TYPE_FOR_HW || mem->type == MEM_TYPE_FOR_SEC_HW
 			|| mem->type == MEM_TYPE_FOR_SEC_WFD_HW)
 		return &inst->vcu_inst.ctx->dev->plat_dev->dev;
 	else
@@ -1349,6 +1347,7 @@ static void venc_get_free_buffers(struct venc_inst *inst,
 	pResult->bs_va = list->venc_bs_va_list[list->read_idx];
 	pResult->frm_va = list->venc_fb_va_list[list->read_idx];
 	pResult->is_last_slc = list->is_last_slice[list->read_idx];
+	pResult->flags = list->flags[list->read_idx];
 
 	mtk_vcodec_debug(inst, "bsva %lx frva %lx bssize %d iskey %d is_last_slc=%d",
 		pResult->bs_va,

@@ -45,7 +45,6 @@
 #include <dt-bindings/memory/mt6985-larb-port.h>
 #endif
 #include <linux/soc/mediatek/mtk-cmdq-ext.h>
-
 #if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
 #include <aee.h>
 #endif
@@ -621,14 +620,14 @@ mtk_cam_raw_try_res_ctrl(struct mtk_raw_pipeline *pipeline,
 			      res_cfg->res_plan, res_user->sensor_res.width,
 			      res_user->sensor_res.height, &width, &height);
 
-	if (res_user->raw_res.bin && !res_cfg->bin_enable) {
-		if (log)
-			dev_info(dev,
-			 "%s:%s:pipe(%d): res calc failed on fource bin: user(%d)/bin_enable(%d)\n",
-			 __func__, dbg_str, pipeline->id, res_user->raw_res.bin,
-			 res_cfg->bin_enable);
-		return -EINVAL;
-	}
+	// if (res_user->raw_res.bin && !res_cfg->bin_enable) {
+	// 	if (log)
+	// 		dev_info(dev,
+	// 		 "%s:%s:pipe(%d): res calc failed on fource bin: user(%d)/bin_enable(%d)\n",
+	// 		 __func__, dbg_str, pipeline->id, res_user->raw_res.bin,
+	// 		 res_cfg->bin_enable);
+	// 	return -EINVAL;
+	// }
 
 	if (res_cfg->raw_num_used > res_cfg->hwn_limit_max ||
 	    res_cfg->raw_num_used < res_cfg->hwn_limit_min) {
@@ -1639,7 +1638,7 @@ bool is_dma_idle(struct mtk_raw_device *dev)
 	if (raw_rst_stat2 != RAW_RST_STAT2_CHECK || yuv_rst_stat != YUV_RST_STAT_CHECK)
 		return false;
 
-	/* check beside rawi_r2/r3/r5 ufdi_r2/r3/r5 */
+	/* check beside rawi_r2/r3/r5*/
 	if (~raw_rst_stat & RAW_RST_STAT_CHECK)
 		return false;
 
@@ -1649,16 +1648,6 @@ bool is_dma_idle(struct mtk_raw_device *dev)
 		 (readl(dev->base + REG_RAWI_R2_BASE + DMA_OFFSET_SPECIAL_DCIF)
 			& DC_CAMSV_STAGER_EN) &&
 		 (readl(dev->base + REG_CTL_MOD6_EN) & CAMCTL_RAWI_R2_EN))
-			? true:false;
-		dev_info(dev->dev, "%s: chasing_stat: 0x%llx ret=%d\n",
-				__func__, chasing_stat, ret);
-	}
-	if (~raw_rst_stat & RST_STAT_UFDI_R2) { /* UFDI_R2 */
-		chasing_stat = readl(dev->base + REG_DMA_DBG_CHASING_STATUS);
-		ret = ((chasing_stat & UFDI_R2_SMI_REQ_ST) == 0 &&
-		 (readl(dev->base + REG_UFDI_R2_BASE + DMA_OFFSET_SPECIAL_DCIF)
-			& DC_CAMSV_STAGER_EN) &&
-		 (readl(dev->base + REG_CTL_MOD6_EN) & CAMCTL_UFDI_R2_EN))
 			? true:false;
 		dev_info(dev->dev, "%s: chasing_stat: 0x%llx ret=%d\n",
 				__func__, chasing_stat, ret);
@@ -1673,16 +1662,6 @@ bool is_dma_idle(struct mtk_raw_device *dev)
 		dev_info(dev->dev, "%s: chasing_stat: 0x%llx, ret=%d\n",
 				__func__, chasing_stat, ret);
 	}
-	if (~raw_rst_stat & RST_STAT_UFDI_R3) { /* UFDI_R3 */
-		chasing_stat = readl(dev->base + REG_DMA_DBG_CHASING_STATUS);
-		ret = ((chasing_stat & UFDI_R3_SMI_REQ_ST) == 0 &&
-		 (readl(dev->base + REG_UFDI_R3_BASE + DMA_OFFSET_SPECIAL_DCIF)
-			& DC_CAMSV_STAGER_EN) &&
-		 (readl(dev->base + REG_CTL_MOD6_EN) & CAMCTL_UFDI_R3_EN))
-			? true:false;
-		dev_info(dev->dev, "%s: chasing_stat: 0x%llx ret=%d\n",
-				__func__, chasing_stat, ret);
-	}
 	if (~raw_rst_stat & RST_STAT_RAWI_R5) {
 		chasing_stat = readl(dev->base + REG_DMA_DBG_CHASING_STATUS2);
 		ret = ((chasing_stat & RAWI_R5_SMI_REQ_ST) == 0 &&
@@ -1691,16 +1670,6 @@ bool is_dma_idle(struct mtk_raw_device *dev)
 		 (readl(dev->base + REG_CTL_MOD6_EN) & CAMCTL_RAWI_R5_EN))
 			? true:false;
 		dev_info(dev->dev, "%s: chasing_stat: 0x%llx, ret=%d\n",
-				__func__, chasing_stat, ret);
-	}
-	if (~raw_rst_stat & RST_STAT_UFDI_R5) { /* UFDI_R5 */
-		chasing_stat = readl(dev->base + REG_DMA_DBG_CHASING_STATUS2);
-		ret = ((chasing_stat & UFDI_R5_SMI_REQ_ST) == 0 &&
-		 (readl(dev->base + REG_UFDI_R5_BASE + DMA_OFFSET_SPECIAL_DCIF)
-			& DC_CAMSV_STAGER_EN) &&
-		 (readl(dev->base + REG_CTL_MOD6_EN) & CAMCTL_UFDI_R5_EN))
-			? true:false;
-		dev_info(dev->dev, "%s: chasing_stat: 0x%llx ret=%d\n",
 				__func__, chasing_stat, ret);
 	}
 
@@ -2643,7 +2612,18 @@ static void mtk_raw_update_debug_param(struct mtk_cam_device *cam,
 		res->tgo_pxl_mode_before_raw, res->clk_target);
 
 }
-
+/* 0: disable, 1: 2x2, 2: 3x3 3: 4x4 */
+static inline int mtk_cbn_type(int cbn)
+{
+	if (cbn == MTK_CAM_CBN_2X2_ON)
+		return 1;
+	else if (cbn == MTK_CAM_CBN_3X3_ON)
+		return 2;
+	else if (cbn == MTK_CAM_CBN_4X4_ON)
+		return 3;
+	else
+		return 0;
+}
 bool mtk_raw_resource_calc(struct mtk_cam_device *cam,
 			   struct mtk_cam_resource_config *res,
 			   s64 pixel_rate, int res_plan,
@@ -2684,8 +2664,8 @@ bool mtk_raw_resource_calc(struct mtk_cam_device *cam,
 		/ (in_h + vblank);
 	calc.width = in_w;
 	calc.height = in_h;
-	calc.bin_en = (res->bin_limit >= 1) ? 1:0;
-	calc.cbn_type = 0; /* 0: disable, 1: 2x2, 2: 3x3 3: 4x4 */
+    calc.bin_en = (res->bin_limit == MTK_CAM_BIN_ON) ? 1 : 0;
+	calc.cbn_type = mtk_cbn_type(res->bin_limit);
 	calc.qbnd_en = 0;
 	calc.qbn_type = 0; /* 0: disable, 1: w/2, 2: w/4 */
 
@@ -2723,8 +2703,8 @@ bool mtk_raw_resource_calc(struct mtk_cam_device *cam,
 	res->raw_num_used = calc.raw_num;
 	res->clk_target = calc.clk;
 	res->bin_enable = calc.bin_en;
-	*out_w = in_w >> calc.bin_en;
-	*out_h = in_h >> calc.bin_en;
+    *out_w = calc.cbn_type ? in_w * (1 + calc.cbn_type) : in_w  >>  calc.bin_en;
+	*out_h = calc.cbn_type ? in_h * (1 + calc.cbn_type) : in_h  >>  calc.bin_en;
 
 	mtk_raw_update_debug_param(cam, res);
 

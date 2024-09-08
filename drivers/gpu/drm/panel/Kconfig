@@ -9,35 +9,25 @@ menu "Display Panels"
 	depends on DRM && DRM_PANEL
 
 config DRM_PANEL_BOE_NT37705_DPHY_CMD_FHD
-	tristate "boe nt37705 dphy cmd fhd panel"
-	depends on OF
-	depends on DRM_MIPI_DSI
-	depends on BACKLIGHT_CLASS_DEVICE
-	help
-	  Say Y here if you want to enable support for ALPHA NT37705
-	  DPHY vdo mode Full HD Plus 60HZ panel. The panel has a 1080x2520
-	  resolution and uses 30-bits RGB per pixel. It provides a
-	  MIPI DSI interface to host.
+        tristate "boe nt37705 dphy cmd fhd panel"
+        depends on OF
+        depends on DRM_MIPI_DSI
+        depends on BACKLIGHT_CLASS_DEVICE
+        help
+          Say Y here if you want to enable support for ALPHA ILI7838A
+          DPHY vdo mode Full HD Plus 60HZ panel. The panel has a 1080x2520
+          resolution and uses 30-bits RGB per pixel. It provides a
+          MIPI DSI interface to host.
 
 config DRM_PANEL_BOE_BF130_DPHY_CMD_HD
-	tristate "boe bf130 dphy cmd hd panel"
+	tristate "panel boe bf130 dphy cmd hd panel"
 	depends on OF
 	depends on DRM_MIPI_DSI
 	depends on BACKLIGHT_CLASS_DEVICE
 	help
-	  Say Y here if you want to enable support for Alpha BF130
-	  HD panel.The panel has a 382x720 resolution and uses 24-bits
-	  RGB per pixel. It provides a MIPI DSI interface to host.
-
-config DRM_PANEL_SAMSUNG_AMF680CM01_CMD_FHD
-	tristate "samsung amf680cm01 cmd fhd panel"
-	depends on OF
-	depends on DRM_MIPI_DSI
-	depends on BACKLIGHT_CLASS_DEVICE
-	help
-	  Say Y here if you want to enable support for ALPHA AMF680CM01
-	  DPHY vdo mode Full HD Plus 60HZ panel. The panel has a 1080x2520
-	  resolution and uses 30-bits RGB per pixel. It provides a
+	  Say Y here if you want to enable support for Alpha foldable
+	  FHD(382*720) panel.
+	  resolution and uses 24-bits RGB per pixel. It provides a
 	  MIPI DSI interface to host.
 
 config DRM_PANEL_ABT_Y030XX067A
@@ -853,17 +843,6 @@ config DRM_PANEL_ALPHA_JDI_NT36672E_CPHY_VDO_WO_DSC_HFP
 	  resolution and uses 24-bits RGB per pixel. It provides a
 	  MIPI DSI interface to host.
 
-config DRM_PANEL_L12A_42_02_0A_DSC_CMD
-	tristate "L12A 42 02 0A DSC cmd mode panel"
-	depends on OF
-	depends on DRM_MIPI_DSI
-	depends on BACKLIGHT_CLASS_DEVICE
-	help
-	  Say Y here if you want to enable support for ALPHA JDI NT36672E
-	  CPHY vdo mode Full HD Plus panel. The panel has a 1080x2400
-	  resolution and uses 24-bits RGB per pixel. It provides a
-	  MIPI DSI interface to host.
-
 config DRM_PANEL_ALPHA_JDI_NT36672E_VDO_120HZ
 	tristate "ALPHA JDI FHD+ DPHY vdo mode 120HZ panel"
 	depends on OF
@@ -1070,6 +1049,63 @@ config DRM_PANEL_NT37705_ALPHA_CMD_SPR
 	  fhd cmd aod panel with spr. The panel has a 1260x2800 resolution
 	  and uses 24-bits RGB per pixel. It provides a MIPI DSI
 	  interface to host.
+
+config DRM_PANEL_M12_42_02_0A_DSC_CMD
+	tristate "m12 42 02 0A DSC cmd mode panel"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here if you want to enable support for CSOT,M12_42_02_0A_DSC_CMD
+	  Plus panel. The panel has a 1220x2712
+	  resolution and uses 24-bits RGB per pixel. It provides a
+	  MIPI DSI interface to host.
+
+config DRM_PANEL_M12_42_02_0A_DSC_CMD_2ND
+	tristate "M12 42 02 0A DSC cmd mode 2nd panel"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here if you want to enable support for ALPHA JDI NT36672E
+	  CPHY vdo mode Full HD Plus panel. The panel has a 1080x2400
+	  resolution and uses 24-bits RGB per pixel. It provides a
+	  MIPI DSI interface to host.
+
+config DRM_PANEL_M12_36_02_0B_DSC_CMD
+	tristate "m12 36 02 0B DSC cmd mode panel"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here if you want to enable support for CSOT,M12_36_02_0B_DSC_CMD
+	  Plus panel. The panel has a 1220x2712
+
+	  resolution and uses 24-bits RGB per pixel. It provides a
+	  MIPI DSI interface to host.
+
+config DRM_PANEL_M12_36_02_0B_DSC_CMD_2ND
+	tristate "m12 36 02 0B DSC cmd mode 2nd panel"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here if you want to enable support for CSOT,M12_36_02_0B_DSC_CMD
+	  Plus panel. The panel has a 1220x2712
+
+	  resolution and uses 24-bits RGB per pixel. It provides a
+	  MIPI DSI interface to host.
+
+config DRM_PANEL_N16U_42_02_0A_DSC_VDO
+	tristate "n16u 42 02 0A DSC vdo mode panel"
+	depends on OF
+	depends on DRM_MIPI_DSI
+	depends on BACKLIGHT_CLASS_DEVICE
+	help
+	  Say Y here if you want to enable support for,N16U_42_02_0A_DSC_VDO
+	  Plus panel. The panel has a 1220x2712
+	  resolution and uses 24-bits RGB per pixel. It provides a
+	  MIPI DSI interface to host.
 
 config DRM_MEDIATEK_PANEL
 	tristate "drm panel common driver"

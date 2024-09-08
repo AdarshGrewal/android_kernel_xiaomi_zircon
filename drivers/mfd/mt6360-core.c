@@ -420,7 +420,6 @@ static int mt6360_regmap_read(void *context, const void *reg, size_t reg_size,
 	u8 crc;
 	int ret;
 
-	//pr_info("%s: bank:%d, addr:0x%x\n", __func__, bank, reg_addr);
 	if (bank >= MT6360_SLAVE_MAX)
 		return -EINVAL;
 
@@ -476,7 +475,6 @@ static int mt6360_regmap_write(void *context, const void *val, size_t val_size)
 	int write_size = val_size - MT6360_REGMAP_REG_BYTE_SIZE;
 	int ret;
 
-	//pr_info("%s: bank:%d, addr:0x%x\n", __func__, bank, reg_addr);
 	if (bank >= MT6360_SLAVE_MAX)
 		return -EINVAL;
 

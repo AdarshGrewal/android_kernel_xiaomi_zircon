@@ -10706,9 +10706,9 @@ static int mt6338_codec_init_reg(struct mt6338_priv *priv)
 	hp_gain_ctl_select(priv, priv->hp_gain_ctl);
 #endif
 	/* hp hifi mode, default normal mode */
-	priv->hp_hifi_mode = 0;
+	priv->hp_hifi_mode = 2;
 	/* mic hifi mode, default hifi mode */
-	priv->mic_hifi_mode = 0;
+	priv->mic_hifi_mode = 1;
 	/* mic type setting */
 	mic_type_default_init(priv);
 

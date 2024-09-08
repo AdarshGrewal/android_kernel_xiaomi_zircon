@@ -861,7 +861,7 @@ int vcp_enable_pm_clk(enum feature_id id)
 		vcp_enable_irqs();
 
 		if (!is_vcp_ready(VCP_A_ID))
-			reset_vcp(VCP_ALL_RESUME);
+			reset_vcp(VCP_ALL_ENABLE);
 	}
 	pwclkcnt++;
 #ifdef VCP_CLK_FMETER
@@ -906,16 +906,16 @@ int vcp_disable_pm_clk(enum feature_id id)
 
 		vcp_disable_irqs();
 		flush_workqueue(vcp_workqueue);
-#if VCP_LOGGER_ENABLE
-		vcp_logger_uninit();
-		flush_workqueue(vcp_logger_workqueue);
-#endif
 		vcp_ready[VCP_A_ID] = 0;
 
 		/* trigger halt isr, force vcp enter wfi */
 		writel(B_GIPC4_SETCLR_1, R_GIPC_IN_SET);
 		wait_vcp_ready_to_reboot();
 
+#if VCP_LOGGER_ENABLE
+		vcp_logger_uninit();
+		flush_workqueue(vcp_logger_workqueue);
+#endif
 #if VCP_BOOT_TIME_OUT_MONITOR
 		del_timer(&vcp_ready_timer[VCP_A_ID].tl);
 #endif
@@ -956,7 +956,6 @@ static int vcp_pm_event(struct notifier_block *notifier
 
 	switch (pm_event) {
 	case PM_SUSPEND_PREPARE:
-		vcp_extern_notify(VCP_EVENT_PRE_SUSPEND);
 		mutex_lock(&vcp_A_notify_mutex);
 		vcp_extern_notify(VCP_EVENT_SUSPEND);
 		mutex_unlock(&vcp_A_notify_mutex);
@@ -2900,10 +2899,6 @@ static const struct of_device_id vcp_ube_core_of_ids[] = {
 	{ .compatible = "mediatek,vcp-io-ube-core", },
 	{}
 };
-static const struct of_device_id vcp_sec_of_ids[] = {
-	{ .compatible = "mediatek,vcp-io-sec", },
-	{}
-};
 
 static struct platform_driver mtk_vcp_io_vdec = {
 	.probe = vcp_io_device_probe,
@@ -2952,16 +2947,6 @@ static struct platform_driver mtk_vcp_io_ube_core = {
 		.name = "vcp_io_ube_core",
 		.owner = THIS_MODULE,
 		.of_match_table = vcp_ube_core_of_ids,
-	},
-};
-
-static struct platform_driver mtk_vcp_io_sec = {
-	.probe = vcp_io_device_probe,
-	.remove = vcp_io_device_remove,
-	.driver = {
-		.name = "vcp_io_sec",
-		.owner = THIS_MODULE,
-		.of_match_table = vcp_sec_of_ids,
 	},
 };
 
@@ -3016,10 +3001,6 @@ static int __init vcp_init(void)
 	if (platform_driver_register(&mtk_vcp_io_work)) {
 		pr_info("[VCP] mtk_vcp_io_work probe fail\n");
 		goto err_io_work;
-	}
-	if (platform_driver_register(&mtk_vcp_io_sec)) {
-		pr_info("[VCP] mtk_vcp_io_sec probe fail\n");
-		goto err_io_sec;
 	}
 
 	if (!vcp_support)
@@ -3110,8 +3091,6 @@ static int __init vcp_init(void)
 
 	return ret;
 err:
-	platform_driver_unregister(&mtk_vcp_io_sec);
-err_io_sec:
 	platform_driver_unregister(&mtk_vcp_io_work);
 err_io_work:
 	platform_driver_unregister(&mtk_vcp_io_venc);
@@ -3161,7 +3140,6 @@ static void __exit vcp_exit(void)
 	for (i = 0; i < VCP_CORE_TOTAL ; i++)
 		del_timer(&vcp_ready_timer[i].tl);
 #endif
-	platform_driver_unregister(&mtk_vcp_io_sec);
 	platform_driver_unregister(&mtk_vcp_io_work);
 	platform_driver_unregister(&mtk_vcp_io_venc);
 	platform_driver_unregister(&mtk_vcp_io_vdec);

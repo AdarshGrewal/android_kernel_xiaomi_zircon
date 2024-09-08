@@ -1339,6 +1339,7 @@ static inline int __down_write_common(struct rw_semaphore *sem, int state)
 			return -EINTR;
 	}
 
+	trace_android_vh_record_rwsem_lock_starttime(current, jiffies);
 	return 0;
 }
 
