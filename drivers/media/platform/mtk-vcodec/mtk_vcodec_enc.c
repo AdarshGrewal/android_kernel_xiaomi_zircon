@@ -353,27 +353,13 @@ static int vidioc_venc_s_ctrl(struct v4l2_ctrl *ctrl)
 		p->bitrate = ctrl->val;
 		ctx->param_change |= MTK_ENCODE_PARAM_BITRATE;
 		break;
-	case V4L2_CID_MPEG_MTK_SEC_ENCODE: {
-#if IS_ENABLED(CONFIG_MTK_TINYSYS_VCP_SUPPORT)
-		struct vb2_queue *dst_vq;
-
-		if (ctrl->val) {
-			if (vcp_get_io_device(VCP_IOMMU_SEC)) {
-				dst_vq = v4l2_m2m_get_vq(ctx->m2m_ctx,
-					V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE);
-				dst_vq->dev = vcp_get_io_device(VCP_IOMMU_SEC);
-				mtk_v4l2_debug(4, "use VCP_IOMMU_SEC domain");
-			}
-
-		}
-#endif
+	case V4L2_CID_MPEG_MTK_SEC_ENCODE:
 		p->svp_mode = ctrl->val;
 		ctx->param_change |= MTK_ENCODE_PARAM_SEC_ENCODE;
 		mtk_v4l2_debug(0, "[%d] V4L2_CID_MPEG_MTK_SEC_ENCODE id %d val %d array[0] %d array[1] %d",
 			ctx->id, ctrl->id, ctrl->val,
 		ctrl->p_new.p_u32[0], ctrl->p_new.p_u32[1]);
 		break;
-	}
 	case V4L2_CID_MPEG_VIDEO_B_FRAMES:
 		mtk_v4l2_debug(2, "V4L2_CID_MPEG_VIDEO_B_FRAMES val = %d",
 			       ctrl->val);
@@ -2554,6 +2540,11 @@ static int mtk_venc_encode_header(void *priv)
 
 	ctx->state = MTK_STATE_HEADER;
 	if (!already_put) {
+		if (enc_result.flags&VENC_FLAG_MULTINAL) {
+			dst_vb2_v4l2->flags |= V4L2_BUF_FLAG_MULTINAL;
+			pr_info("%s %d enc_result.flags 0x%x\n", __func__, __LINE__, enc_result.flags);
+		}
+
 		dst_buf->planes[0].bytesused = enc_result.bs_size;
 		v4l2_m2m_buf_done(dst_vb2_v4l2, VB2_BUF_STATE_DONE);
 	}

@@ -57,10 +57,10 @@
 #define MTK_VENC_PORT_NUM	128
 #define MTK_VDEC_LARB_NUM	8
 #define MTK_VENC_LARB_NUM	8
-#define MTK_MAX_METADATA_NUM    8
+#define MTK_MAX_METADATA_NUM	8
 
-#define MAX_GEN_BUF_CNT		32
-#define MAX_META_BUF_CNT		32
+#define MAX_GEN_BUF_CNT		64
+#define MAX_META_BUF_CNT	32
 
 #define DEBUG_GKI 1
 
@@ -586,7 +586,6 @@ struct mtk_vcodec_ctx {
 
 	struct v4l2_fh fh;
 	struct v4l2_m2m_ctx *m2m_ctx;
-	struct device *general_dev;
 	struct mtk_q_data q_data[2];
 	int id;
 	enum mtk_instance_state state;
@@ -658,12 +657,6 @@ struct mtk_vcodec_ctx {
 	int decoded_frame_cnt;
 	int last_decoded_frame_cnt; // used for timer to check active state of decoded ctx
 
-	/* used for vcp background idle check */
-	unsigned int vcp_action_cnt;
-	unsigned int last_vcp_action_cnt;
-	bool is_vcp_active;
-	struct mutex vcp_active_mutex;
-
 	struct mutex buf_lock;
 	struct mutex worker_lock;
 	struct slbc_data sram_data;
@@ -678,7 +671,8 @@ struct mtk_vcodec_ctx {
 	int fence_idx;
 	struct dma_gen_buf dma_buf_list[MAX_GEN_BUF_CNT];
 	struct dma_meta_buf dma_meta_list[MAX_META_BUF_CNT];
-	struct mutex gen_buf_va_lock;
+	struct mutex gen_buf_list_lock;
+	struct mutex meta_buf_lock;
 	/*
 	 * need resched or not
 	 * core want to re-schedule m2m ctx if disp/free list is not empty
@@ -772,7 +766,6 @@ struct mtk_vcodec_dev {
 	struct workqueue_struct *encode_workqueue;
 	struct workqueue_struct *check_alive_workqueue;
 	struct vdec_check_alive_work_struct check_alive_work;
-	struct mutex check_alive_mutex;
 
 	int int_cond;
 	int int_type;
