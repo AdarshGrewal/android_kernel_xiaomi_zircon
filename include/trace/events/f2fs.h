@@ -1,6 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 #undef TRACE_SYSTEM
-#define TRACE_SYSTEM f2fs
 
 #if !defined(_TRACE_F2FS_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_F2FS_H
@@ -2191,7 +2190,51 @@ DEFINE_EVENT(f2fs__rw_end, f2fs_datawrite_end,
 	TP_ARGS(inode, offset, bytes)
 );
 
+TRACE_EVENT(f2fs__unlink_file_by_dentry,
+
+	TP_PROTO(struct inode *inode),
+
+	TP_ARGS(inode),
+
+	TP_STRUCT__entry(
+		__field(ino_t,	ino)
+		__field(loff_t,	size)
+	),
+
+	TP_fast_assign(
+		__entry->ino	= inode->i_ino;
+		__entry->size	= inode->i_size;
+	),
+
+	TP_printk("ino = %lu, i_size = %lld",
+		__entry->ino,
+		__entry->size)
+);
+
+TRACE_EVENT(f2fs__handle_writeback_inode,
+
+	TP_PROTO(struct inode *inode),
+
+	TP_ARGS(inode),
+
+	TP_STRUCT__entry(
+		__field(ino_t,	ino)
+		__field(loff_t,	size)
+	),
+
+	TP_fast_assign(
+		__entry->ino	= inode->i_ino;
+		__entry->size	= inode->i_size;
+	),
+
+	TP_printk("ino = %lu, i_size = %lld",
+		__entry->ino,
+		__entry->size)
+);
+
 #endif /* _TRACE_F2FS_H */
 
+#undef TRACE_INCLUDE_FILE
+#define TRACE_INCLUDE_FILE f2fs
  /* This part must be outside protection */
 #include <trace/define_trace.h>
