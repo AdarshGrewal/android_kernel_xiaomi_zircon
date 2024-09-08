@@ -13,8 +13,6 @@
 #define MAX_OPP		(8)
 #define IPI_TIMEOUT_MS	(200U)
 
-#define MMDVFS_RST_CLK_NUM	(3)
-
 #define MMDVFS_DBG(fmt, args...) \
 	pr_notice("[mmdvfs][dbg]%s: "fmt"\n", __func__, ##args)
 #define MMDVFS_ERR(fmt, args...) \
