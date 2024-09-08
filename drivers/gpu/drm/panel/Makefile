@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat
 
+obj-$(CONFIG_DRM_PANEL_BOE_NT37705_DPHY_CMD_FHD) += panel-boe-nt37705-dphy-cmd-fhd.o
+obj-$(CONFIG_DRM_PANEL_BOE_BF130_DPHY_CMD_HD) += panel-boe-bf130-dphy-cmd-hd.o
 obj-$(CONFIG_DRM_PANEL_ABT_Y030XX067A) += panel-abt-y030xx067a.o
 obj-$(CONFIG_DRM_PANEL_ARM_VERSATILE) += panel-arm-versatile.o
 obj-$(CONFIG_DRM_PANEL_ASUS_Z00T_TM5P5_NT35596) += panel-asus-z00t-tm5p5-n35596.o
@@ -98,20 +100,19 @@ obj-$(CONFIG_DRM_PANEL_SAMSUNG_S68FC01_VDO_AOD) += panel-samsung-s68fc01-vdo-aod
 obj-$(CONFIG_DRM_PANEL_ALPHA_SAMSUNG_S6E3HAE_CMD_120HZ) += panel-alpha-samsung-s6e3hae-fhd-dphy-cmd-120hz-r4831a.o
 obj-$(CONFIG_DRM_PANEL_NT37801_CMD_LTPO) += panel-nt37801-cmd-ltpo.o
 obj-$(CONFIG_DRM_PANEL_NT37801_CMD_120HZ) += panel-nt37801-cmd-120hz.o
-obj-$(CONFIG_DRM_PANEL_L12A_42_02_0A_DSC_CMD) += panel-l12a-42-02-0a-dsc-cmd.o
 obj-$(CONFIG_DRM_PANEL_NT37801_CMD_FHD) += panel-nt37801-cmd-fhd.o
 obj-$(CONFIG_DRM_PANEL_NT37801_CMD_SPR) += panel-nt37801-cmd-spr.o
+obj-$(CONFIG_DRM_PANEL_M12_42_02_0A_DSC_CMD) += panel-m12-42-02-0a-dsc-cmd.o
+obj-$(CONFIG_DRM_PANEL_M12_42_02_0A_DSC_CMD_2ND) += panel-m12-42-02-0a-dsc-cmd-2nd.o
+obj-$(CONFIG_DRM_PANEL_M12_36_02_0B_DSC_CMD) += panel-m12-36-02-0b-dsc-cmd.o
+obj-$(CONFIG_DRM_PANEL_M12_36_02_0B_DSC_CMD_2ND) += panel-m12-36-02-0b-dsc-cmd-2nd.o
+obj-$(CONFIG_DRM_PANEL_N16U_42_02_0A_DSC_VDO) += panel-n16u-42-02-0a-dsc-vdo.o
 ifneq ($(wildcard $(srctree)/$(src)/k6985v1_64),)
 obj-$(CONFIG_DRM_TD2204_WQHD_AMB678ZY01_S6E3HC3_CMD) += k6985v1_64/td2204-wqhd-amb678zy01-s6e3hc3-cmd.o
 endif
 ifneq ($(wildcard $(srctree)/$(src)/k6985v1_64_alpha),)
 obj-$(CONFIG_DRM_PANEL_NT37705_ALPHA_CMD) += k6985v1_64_alpha/panel-nt37705-alpha-cmd.o
 obj-$(CONFIG_DRM_PANEL_NT37705_ALPHA_CMD_SPR) += k6985v1_64_alpha/panel-nt37705-alpha-cmd-spr.o
-endif
-ifneq ($(wildcard $(srctree)/$(src)/k6985v1_64_flip_alpha),)
-obj-$(CONFIG_DRM_PANEL_BOE_NT37705_DPHY_CMD_FHD) += k6985v1_64_flip_alpha/panel-boe-nt37705-dphy-cmd-fhd.o
-obj-$(CONFIG_DRM_PANEL_BOE_BF130_DPHY_CMD_HD) += k6985v1_64_flip_alpha/panel-boe-bf130-dphy-cmd-hd.o
-obj-$(CONFIG_DRM_PANEL_SAMSUNG_AMF680CM01_CMD_FHD) += k6985v1_64_flip_alpha/panel-samsung-amf680cm01-cmd-fhd.o
 endif
 
 mediatek-drm-gateic-y := mtk_drm_panel_i2c.o \
@@ -140,3 +141,31 @@ obj-$(CONFIG_DRM_MEDIATEK_PANEL) += mediatek-drm-panel-drv.o
 obj-$(CONFIG_DRM_MEDIATEK_PANEL) += mediatek-cust-panel-sample.o
 
 ccflags-$(CONFIG_DRM_MEDIATEK_PANEL) += -I$(srctree)/drivers/leds/
+
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/dramc/$(MTK_PLATFORM) \
+             -I$(srctree)/drivers/misc/mediatek/smi/ \
+             -I$(srctree)/drivers/misc/mediatek/mmp/ \
+             -I$(srctree)/drivers/misc/mediatek/mmdvfs/ \
+             -I$(srctree)/drivers/misc/mediatek/pmic/ \
+             -I$(srctree)/drivers/iommu/ \
+             -I$(srctree)/drivers/devfreq/ \
+             -I$(srctree)/drivers/gpu/drm/ \
+             -I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include/mach/ \
+             -I$(srctree)/drivers/misc/mediatek/include/mt-plat/ \
+             -I$(srctree)/drivers/misc/mediatek/leds/ \
+             -I$(srctree)/drivers/misc/mediatek/leds/$(MTK_PLATFORM) \
+             -I$(srctree)/drivers/misc/mediatek/cmdq/mailbox/ \
+             -I$(srctree)/drivers/misc/mediatek/iommu/ \
+             -I$(srctree)/drivers/misc/mediatek/mtk-interconnect/ \
+             -I$(srctree)/drivers/misc/mediatek/slbc/ \
+             -I$(srctree)/drivers/misc/mediatek/cmdq/mailbox/ \
+             -I$(srctree)/drivers/misc/mediatek/clkbuf/v1/inc/ \
+             -I$(srctree)/drivers/misc/mediatek/scp/include/ \
+             -I$(srctree)/drivers/gpu/drm/mediatek/mediatek_v2/mi_disp/ \
+             -I$(srctree)/drivers/gpu/drm/mediatek/mediatek_v2/ \
+
+ifeq (${CONFIG_PXLW_IRIS},y)
+$(warning The feature of pixelworks iris will be added to the kernel)
+PWATOP=$(srctree)/..
+ccflags-y += -I$(PWATOP)/vendor/pixelworks/libpwiriskernel/display-drivers/
+endif

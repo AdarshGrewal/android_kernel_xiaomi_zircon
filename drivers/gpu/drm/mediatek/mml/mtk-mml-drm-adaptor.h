@@ -33,7 +33,6 @@ enum mml_query_mode_reason {
 	mml_query_lowpixel,
 	mml_query_outwidth,
 	mml_query_rszratio,
-	mml_query_format,
 	mml_query_apudc,
 };
 
