@@ -755,14 +755,8 @@ int __gpufreq_generic_commit_gpu(int target_oppidx, enum gpufreq_dvfs_state key)
 	/* check dvfs state */
 	if (g_dvfs_state & ~key) {
 		GPUFREQ_LOGD("unavailable DVFS state (0x%x)", g_dvfs_state);
-		/* still update Volt when DVFS is fixed by fix OPP cmd */
-		if (g_dvfs_state == DVFS_FIX_OPP)
-			target_oppidx = g_gpu.cur_oppidx;
-		/* otherwise skip */
-		else {
-			ret = GPUFREQ_SUCCESS;
-			goto done_unlock;
-		}
+		ret = GPUFREQ_SUCCESS;
+		goto done_unlock;
 	}
 
 	/* prepare GPU setting */
@@ -846,18 +840,18 @@ int __gpufreq_fix_target_oppidx_gpu(int oppidx)
 		goto done;
 
 	if (oppidx == -1) {
-		__gpufreq_set_dvfs_state(false, DVFS_FIX_OPP);
+		__gpufreq_set_dvfs_state(false, DVFS_DEBUG_KEEP);
 		ret = GPUFREQ_SUCCESS;
 	} else if (oppidx >= 0 && oppidx < opp_num) {
-		__gpufreq_set_dvfs_state(true, DVFS_FIX_OPP);
+		__gpufreq_set_dvfs_state(true, DVFS_DEBUG_KEEP);
 
 #ifdef GPUFREQ_HISTORY_ENABLE
 		gpufreq_set_history_target_opp(TARGET_GPU, oppidx);
 #endif /* GPUFREQ_HISTORY_ENABLE */
 
-		ret = __gpufreq_generic_commit_gpu(oppidx, DVFS_FIX_OPP);
+		ret = __gpufreq_generic_commit_gpu(oppidx, DVFS_DEBUG_KEEP);
 		if (unlikely(ret))
-			__gpufreq_set_dvfs_state(false, DVFS_FIX_OPP);
+			__gpufreq_set_dvfs_state(false, DVFS_DEBUG_KEEP);
 	} else
 		ret = GPUFREQ_EINVAL;
 
@@ -895,18 +889,18 @@ int __gpufreq_fix_custom_freq_volt_gpu(unsigned int freq, unsigned int volt)
 	min_volt = VGPU_MIN_VOLT;
 
 	if (freq == 0 && volt == 0) {
-		__gpufreq_set_dvfs_state(false, DVFS_FIX_FREQ_VOLT);
+		__gpufreq_set_dvfs_state(false, DVFS_DEBUG_KEEP);
 		ret = GPUFREQ_SUCCESS;
 	} else if (freq > max_freq || freq < min_freq) {
 		ret = GPUFREQ_EINVAL;
 	} else if (volt > max_volt || volt < min_volt) {
 		ret = GPUFREQ_EINVAL;
 	} else {
-		__gpufreq_set_dvfs_state(true, DVFS_FIX_FREQ_VOLT);
+		__gpufreq_set_dvfs_state(true, DVFS_DEBUG_KEEP);
 
-		ret = __gpufreq_custom_commit_gpu(freq, volt, DVFS_FIX_FREQ_VOLT);
+		ret = __gpufreq_custom_commit_gpu(freq, volt, DVFS_DEBUG_KEEP);
 		if (unlikely(ret))
-			__gpufreq_set_dvfs_state(false, DVFS_FIX_FREQ_VOLT);
+			__gpufreq_set_dvfs_state(false, DVFS_DEBUG_KEEP);
 	}
 
 	__gpufreq_power_control(POWER_OFF);
