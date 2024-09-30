@@ -21,6 +21,9 @@
 static uint project;
 module_param(project, uint, 0444);
 
+static uint project_name;
+module_param(project_name, uint, 0444);
+
 static uint hwid_value;
 module_param(hwid_value, uint, 0444);
 
@@ -59,6 +62,11 @@ uint32_t get_hw_version_build(void)
 	return (hwid_value & HW_BUILD_VERSION_MASK) >> HW_BUILD_VERSION_SHIFT;
 }
 EXPORT_SYMBOL(get_hw_version_build);
+
+char* product_name_get(void) {
+	return "zircon";
+}
+EXPORT_SYMBOL(product_name_get);
 
 MODULE_AUTHOR("weixiaotian1@xiaomi.com");
 MODULE_LICENSE("GPL v2");
