@@ -32,7 +32,7 @@
 /* #include <mtk_gpu_power_sspm_ipi.h> */
 /* #endif */
 
-#include <swpm_module.h>
+#include "inc/swpm_module.h"
 
 /****************************************************************************
  *  Global Variables

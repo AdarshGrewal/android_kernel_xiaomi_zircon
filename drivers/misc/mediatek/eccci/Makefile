@@ -117,9 +117,6 @@ obj-$(CCCI_OBJ) += hif/
 obj-$(CCCI_OBJ) += port/
 obj-$(CCCI_OBJ) += udc/
 
-# platform code
-obj-$(CCCI_OBJ) += platform/
-
 endif
 
 endif

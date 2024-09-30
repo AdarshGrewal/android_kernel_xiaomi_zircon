@@ -19,7 +19,7 @@
 #include "modem_secure_base.h"
 
 #ifdef FEATURE_SCP_CCCI_SUPPORT
-#include "scp_ipi.h"
+#include "../../scp/rv/scp_ipi.h"
 
 #ifdef CCCI_KMODULE_ENABLE
 void ccci_scp_md_state_sync(int md_state);

@@ -7,7 +7,7 @@
 #define __CCCI_MODEM_H__
 
 #include "mt-plat/mtk_ccci_common.h"
-#include "ap_md_mem.h"
+#include "../fsm/ap_md_mem.h"
 
 enum MD_FORCE_ASSERT_TYPE {
 	MD_FORCE_ASSERT_RESERVE = 0x000,
