@@ -9,6 +9,7 @@ ccflags-y += -I$(srctree)/drivers/mmc/host
 ccflags-y += -I$(srctree)/drivers/mmc/core
 
 obj-$(CONFIG_RPMB) += rpmb-mtk.o
+ccflags-y += -Wunused-variable
 
 obj-$(CONFIG_RPMB) += rpmb.o
 rpmb-objs += core.o

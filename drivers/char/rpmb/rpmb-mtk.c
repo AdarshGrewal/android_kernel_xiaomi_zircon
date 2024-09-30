@@ -45,16 +45,13 @@
 #include "ufs-mediatek.h"
 #endif
 
-#if IS_ENABLED(CONFIG_MMC_MTK_PRO)
 #include <uapi/linux/mmc/ioctl.h>
 #include "core.h"
 #include "mmc_ops.h"
 #include "mtk-mmc.h"
 #include "queue.h"
 #include "rpmb-mtk.h"
-
 static struct mmc_host *mtk_mmc_host[] = {NULL};
-#endif
 
 /* #define __RPMB_MTK_DEBUG_MSG */
 /* #define __RPMB_MTK_DEBUG_HMAC_VERIFY */

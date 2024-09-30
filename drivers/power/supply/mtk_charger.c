@@ -138,6 +138,50 @@ static int screen_state_for_charger_callback(struct notifier_block *nb, unsigned
     return NOTIFY_OK;
 }
 
+static void usbpd_mi_vdm_received_cb(struct mtk_charger *pinfo, struct tcp_ny_uvdm uvdm)
+{
+	int i, cmd;
+	if (uvdm.uvdm_svid != USB_PD_MI_SVID)
+		return;
+	cmd = UVDM_HDR_CMD(uvdm.uvdm_data[0]);
+	chr_err("cmd = %d\n", cmd);
+	chr_err("uvdm.ack: %d, uvdm.uvdm_cnt: %d, uvdm.uvdm_svid: 0x%04x\n",
+			uvdm.ack, uvdm.uvdm_cnt, uvdm.uvdm_svid);
+	switch (cmd) {
+	case USBPD_UVDM_CHARGER_VERSION:
+		pinfo->pd_adapter->vdm_data.ta_version = uvdm.uvdm_data[1];
+		chr_err("ta_version:%x\n", pinfo->pd_adapter->vdm_data.ta_version);
+		break;
+	case USBPD_UVDM_CHARGER_TEMP:
+		pinfo->pd_adapter->vdm_data.ta_temp = (uvdm.uvdm_data[1] & 0xFFFF) * 10;
+		chr_err("pinfo->pd_adapter->vdm_data.ta_temp:%d\n", pinfo->pd_adapter->vdm_data.ta_temp);
+		break;
+	case USBPD_UVDM_CHARGER_VOLTAGE:
+		pinfo->pd_adapter->vdm_data.ta_voltage = (uvdm.uvdm_data[1] & 0xFFFF) * 10;
+		pinfo->pd_adapter->vdm_data.ta_voltage *= 1000;
+		chr_err("ta_voltage:%d\n", pinfo->pd_adapter->vdm_data.ta_voltage);
+		break;
+	case USBPD_UVDM_SESSION_SEED:
+		for (i = 0; i < USBPD_UVDM_SS_LEN; i++) {
+			pinfo->pd_adapter->vdm_data.s_secert[i] = uvdm.uvdm_data[i+1];
+			chr_err("usbpd s_secert uvdm.uvdm_data[%d]=0x%x", i+1, uvdm.uvdm_data[i+1]);
+		}
+		break;
+	case USBPD_UVDM_AUTHENTICATION:
+		for (i = 0; i < USBPD_UVDM_SS_LEN; i++) {
+			pinfo->pd_adapter->vdm_data.digest[i] = uvdm.uvdm_data[i+1];
+			chr_err("usbpd digest[%d]=0x%x", i+1, uvdm.uvdm_data[i+1]);
+		}
+		break;
+	case USBPD_UVDM_REVERSE_AUTHEN:
+		pinfo->pd_adapter->vdm_data.reauth = (uvdm.uvdm_data[1] & 0xFFFF);
+		break;
+	default:
+		break;
+	}
+	pinfo->pd_adapter->uvdm_state = cmd;
+}
+
 #ifdef MODULE
 static char __chg_cmdline[COMMAND_LINE_SIZE];
 static char *chg_cmdline = __chg_cmdline;
@@ -4845,50 +4889,6 @@ static int usb_sysfs_create_group(struct power_supply *psy)
 
 	return sysfs_create_group(&psy->dev.kobj,
 			&usb_sysfs_attr_group);
-}
-
-static void usbpd_mi_vdm_received_cb(struct mtk_charger *pinfo, struct tcp_ny_uvdm uvdm)
-{
-	int i, cmd;
-	if (uvdm.uvdm_svid != USB_PD_MI_SVID)
-		return;
-	cmd = UVDM_HDR_CMD(uvdm.uvdm_data[0]);
-	chr_err("cmd = %d\n", cmd);
-	chr_err("uvdm.ack: %d, uvdm.uvdm_cnt: %d, uvdm.uvdm_svid: 0x%04x\n",
-			uvdm.ack, uvdm.uvdm_cnt, uvdm.uvdm_svid);
-	switch (cmd) {
-	case USBPD_UVDM_CHARGER_VERSION:
-		pinfo->pd_adapter->vdm_data.ta_version = uvdm.uvdm_data[1];
-		chr_err("ta_version:%x\n", pinfo->pd_adapter->vdm_data.ta_version);
-		break;
-	case USBPD_UVDM_CHARGER_TEMP:
-		pinfo->pd_adapter->vdm_data.ta_temp = (uvdm.uvdm_data[1] & 0xFFFF) * 10;
-		chr_err("pinfo->pd_adapter->vdm_data.ta_temp:%d\n", pinfo->pd_adapter->vdm_data.ta_temp);
-		break;
-	case USBPD_UVDM_CHARGER_VOLTAGE:
-		pinfo->pd_adapter->vdm_data.ta_voltage = (uvdm.uvdm_data[1] & 0xFFFF) * 10;
-		pinfo->pd_adapter->vdm_data.ta_voltage *= 1000;
-		chr_err("ta_voltage:%d\n", pinfo->pd_adapter->vdm_data.ta_voltage);
-		break;
-	case USBPD_UVDM_SESSION_SEED:
-		for (i = 0; i < USBPD_UVDM_SS_LEN; i++) {
-			pinfo->pd_adapter->vdm_data.s_secert[i] = uvdm.uvdm_data[i+1];
-			chr_err("usbpd s_secert uvdm.uvdm_data[%d]=0x%x", i+1, uvdm.uvdm_data[i+1]);
-		}
-		break;
-	case USBPD_UVDM_AUTHENTICATION:
-		for (i = 0; i < USBPD_UVDM_SS_LEN; i++) {
-			pinfo->pd_adapter->vdm_data.digest[i] = uvdm.uvdm_data[i+1];
-			chr_err("usbpd digest[%d]=0x%x", i+1, uvdm.uvdm_data[i+1]);
-		}
-		break;
-	case USBPD_UVDM_REVERSE_AUTHEN:
-		pinfo->pd_adapter->vdm_data.reauth = (uvdm.uvdm_data[1] & 0xFFFF);
-		break;
-	default:
-		break;
-	}
-	pinfo->pd_adapter->uvdm_state = cmd;
 }
 
 int chg_alg_event(struct notifier_block *notifier,

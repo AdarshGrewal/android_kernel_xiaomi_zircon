@@ -19,7 +19,7 @@
 #include "ccci_bm.h"
 #include "modem_sys.h"
 #include "ccci_hif.h"
-#include "md_sys1_platform.h"
+#include "fsm/md_sys1_platform.h"
 
 #include "mt-plat/mtk_ccci_common.h"
 
